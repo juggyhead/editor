@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Jai Sri Ram</title>
+  <script src="all.js"></script>
+  <script>
+    goog.require('goog.debug');
+    goog.require('goog.debug.Logger');
+    goog.require('goog.debug.DivConsole');
+    goog.require('goog.dom');
+    goog.require('goog.dom.Range');
+    goog.require('goog.editor.Command');
+    goog.require('goog.editor.Field');
+    goog.require('goog.editor.plugins.BasicTextFormatter');
+    goog.require('goog.editor.plugins.EnterHandler');
+    goog.require('goog.editor.plugins.HeaderFormatter');
+    goog.require('goog.editor.plugins.LinkBubble');
+    goog.require('goog.editor.plugins.LinkDialogPlugin');
+    goog.require('goog.editor.plugins.ListTabHandler');
+    goog.require('goog.editor.plugins.LoremIpsum');
+    goog.require('goog.editor.plugins.RemoveFormatting');
+    goog.require('goog.editor.plugins.SpacesTabHandler');
+    goog.require('goog.editor.plugins.UndoRedo');
+    goog.require('goog.events');
+    goog.require('goog.events.KeyCodes');
+    goog.require('goog.style');
+    goog.require('goog.ui.editor.DefaultToolbar');
+    goog.require('goog.ui.editor.ToolbarController');
+    goog.require('goog.ui.Prompt');
+    goog.require('goog.ui.TabPane');
+  </script>
+
+  <link rel="stylesheet" href="all.css" />
+
+  <style>
+    #editMe {
+      width: 800px;
+      height: 600px;
+      background-color: white;
+      border: 1px solid grey;
+    }
+    #console {
+      position:absolute;
+      right:100px;
+      top:0px;
+      width:400px;
+      color: green !important;
+      background: white;
+    }
+    #keys {
+      position:absolute;
+      right:100px;
+      top:0px;
+      width:400px;
+      color: green !important;
+      background: white;
+    }
+
+    .goog-tabpane {
+      background: white;
+      padding-left: 1px;
+      position: relative;
+    }
+
+    .goog-tabpane-tabs {
+      list-style: none;
+      margin: 0px;
+      padding: 0px;
+      height: 1ex;
+      position: relative;
+    }
+
+    .goog-tabpane-left .goog-tabpane-tabs {
+      float: left;
+    }
+
+    .goog-tabpane-right .goog-tabpane-tabs {
+      float: right;
+    }
+
+    .goog-tabpane-cont {
+      overflow: auto;
+      background: white;
+      border: 1px solid lightgrey;
+      padding: 2px;
+      width: 800px;
+
+    }
+
+    .goog-tabpane-tab, .goog-tabpane-tab-selected {
+      display: block;
+      padding: 0px 3ex;
+      background: lightgray;
+      border: 1px solid;
+      margin: 0px;
+    }
+
+    .goog-tabpane-top .goog-tabpane-tab,
+    .goog-tabpane-top .goog-tabpane-tab-selected,
+    .goog-tabpane-bottom .goog-tabpane-tab,
+    .goog-tabpane-bottom .goog-tabpane-tab-selected {
+      float: left;
+    }
+
+    .goog-tabpane-top .goog-tabpane-tab,
+    .goog-tabpane-top .goog-tabpane-tab-selected {
+      border-color: threedhighlight threedshadow threedface threedhighlight;
+    }
+
+    .goog-tabpane-bottom .goog-tabpane-tab,
+    .goog-tabpane-bottom .goog-tabpane-tab-selected {
+      border-color: threedface threedshadow threedshadow threedhighlight;
+    }
+
+    .goog-tabpane-left .goog-tabpane-tab,
+    .goog-tabpane-left .goog-tabpane-tab-selected {
+      border-color: threedhighlight threedface threedshadow threedhighlight;
+    }
+
+    .goog-tabpane-right .goog-tabpane-tab,
+    .goog-tabpane-right .goog-tabpane-tab-selected {
+      border-color: threedhighlight threedshadow threedshadow threedface;
+    }
+
+    .goog-tabpane-top .goog-tabpane-tab {
+      margin-top: 3px;
+    }
+
+    .goog-tabpane-tab-selected {
+      font-weight: bold;
+    }
+
+    .goog-tabpane-tab-selected,
+    .goog-tabpane-tab-selected {
+      padding-bottom: 2px;
+      padding-top: 2px;
+    }
+
+    .goog-tabpane-top .goog-tabpane-tab-selected {
+      position: relative;
+      top: 1px;
+    }
+
+    .goog-tabpane-bottom .goog-tabpane-tab-selected {
+      position: relative;
+      top: -1px;
+    }
+
+    .goog-tabpane-left .goog-tabpane-tab-selected {
+      position: relative;
+      left: 1px;
+    }
+
+    .goog-tabpane-right .goog-tabpane-tab-selected {
+      position: relative;
+      left: -1px;
+    }
+   .modal-dialog-bg {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    background-color: #FFF;
+  }
+
+  .modal-dialog {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 300px;
+    background-color: #AAF;
+    border: 2px solid #99c0ff;
+  }
+
+  .modal-dialog-title {
+    position:relative;
+    background: #C3D9FF;
+    padding: 4px;
+    font: bold 11px verdana;
+    cursor: default;
+  }
+
+  .modal-dialog-content {
+    background: #E8EEF7;
+    padding: 12px 18px 12px 18px;  font: normal 12px verdana;
+    font: normal 12px verdana;
+  }
+
+  .modal-dialog-userInput {
+    font: normal 12px verdana;
+    width: 90%;
+  }
+
+  .modal-dialog-buttons {
+    background: #E8EEF7;
+    padding: 4px;
+    font: normal 12px verdana;
+    text-align: right;
+  }
+
+  .modal-dialog-buttons button {
+    margin: 5px;
+  }
+    .mappingkey {
+      font-family: Arial Unicode MS;
+      font-size: large;
+      border: 1px solid lightgray;
+      width: 200px;
+      display: inline;
+      float:left;
+      padding-left:7px;
+    }
+    .languagechange {
+      color: blue;
+      font-weight: bold;
+      text-decoration: underline;
+      margin: 4px;
+    }
+    .button {
+	background-color: #4d90fe;
+	border: 1px solid #3079ed;
+	-webkit-border-radius: 2px;
+	border-radius: 2px;
+	background-image: -webkit-linear-gradient(top,#4b4,#484);
+	color:white;
+	font-weight:bold;
+	height: 29px;
+	line-height: 29px;
+	min-width: 54px;
+	padding: 0 8px;
+	text-align: center;
+	margin:10px;
+    }
+    .draftsaved {
+	font-style:italic;
+	color:gray;
+	}
+	#loadmenu {
+	  font-weight:bold;
+	  background-color:#eef;
+	}
+	#deletemenu {
+	  font-weight:bold;
+	  background-color:#fee;
+	}
+	#loadbutton {
+		height: 20px;
+		line-height: 20px;
+		min-width: 45px;
+		background-image: -webkit-linear-gradient(top,#4d90fe,#4787ed);
+	}
+	#deletebutton {
+		height: 20px;
+		line-height: 20px;
+		min-width: 45px;
+		background-image: -webkit-linear-gradient(top,#f44,#a44);
+	}
+  </style>
+
+
+</head>
+
+<body>
+  <div>
+  <button type="button" class="button" onclick="saveContents()">Save contents to a file</button>
+  <button type="button" class="button"  id = "loadbutton" onclick="popupMenu(loadmenu)">Load from a file</button>
+  <div id="loadmenu"></div>
+  <div id="deletemenu"></div>
+  <button type="button" class="button" id = "deletebutton" onclick="popupMenu(deletemenu)">Delete a file</button>
+  &nbsp;&nbsp;<span class="draftsaved" id="draftspan"></span>
+  </div>
+  <br/>
+  <div id="tabpane"></div>
+  <div id="theeditor">
+    <div id='toolbar' style='width:800px'></div>
+    <div id='editMe'></div>
+  </div>
+  <div id='mappings'></div>
+  <a href="#" id="lang" class="languagechange" onclick="setLanguage()"></a>
+  <!--
+  <hr>
+        <p><button onclick="divConsole.clear()">Clear Console</button></p>
+    <div id="console"></div>
+    <div id="keys"></div>
+
+  <p><b>Current field contents</b>
+  (updates as contents of the editable field above change):<br>
+  <textarea id="fieldContents" style="height:100px;width:400px;font-family:monospace""></textarea><br>
+  <input type="button" value="Set Field Contents"
+      onclick="myField.setHtml(false, goog.dom.getElement('fieldContents').value);" />
+  (Use to set contents of the editable field to the contents of this textarea)
+  </p>
+  -->
+
+  <script>
+  // Tab settings
+
+  var editortitle = "Editor";
+  var mappingstitle = "Keys";
+  var tabPane = new goog.ui.TabPane(document.getElementById('tabpane'));
+  tabPane.addPage(new goog.ui.TabPane.TabPage(
+        document.getElementById('theeditor'), editortitle));
+  tabPane.addPage(new goog.ui.TabPane.TabPage(
+        document.getElementById('mappings'), mappingstitle));
+
+  function updateFieldContents() {
+    goog.dom.getElement('fieldContents').value = myField.getCleanContents();
+  }
+
+  // Create an editable field.
+  var myField = new goog.editor.Field('editMe');
+
+  // Create and register all of the editing plugins you want to use.
+  myField.registerPlugin(new goog.editor.plugins.BasicTextFormatter());
+  myField.registerPlugin(new goog.editor.plugins.RemoveFormatting());
+  myField.registerPlugin(new goog.editor.plugins.UndoRedo());
+  myField.registerPlugin(new goog.editor.plugins.ListTabHandler());
+  myField.registerPlugin(new goog.editor.plugins.SpacesTabHandler());
+  myField.registerPlugin(new goog.editor.plugins.EnterHandler());
+  myField.registerPlugin(new goog.editor.plugins.HeaderFormatter());
+  myField.registerPlugin(
+      new goog.editor.plugins.LinkDialogPlugin());
+  myField.registerPlugin(new goog.editor.plugins.LinkBubble());
+
+  // Specify the buttons to add to the toolbar, using built in default buttons.
+  var buttons = [
+    goog.editor.Command.BOLD,
+    goog.editor.Command.ITALIC,
+    goog.editor.Command.UNDERLINE,
+    goog.editor.Command.FONT_COLOR,
+    goog.editor.Command.BACKGROUND_COLOR,
+    goog.editor.Command.FONT_FACE,
+    goog.editor.Command.FONT_SIZE,
+    goog.editor.Command.LINK,
+    goog.editor.Command.UNDO,
+    goog.editor.Command.REDO,
+    goog.editor.Command.UNORDERED_LIST,
+    goog.editor.Command.ORDERED_LIST,
+    goog.editor.Command.INDENT,
+    goog.editor.Command.OUTDENT,
+    goog.editor.Command.JUSTIFY_LEFT,
+    goog.editor.Command.JUSTIFY_CENTER,
+    goog.editor.Command.JUSTIFY_RIGHT,
+    goog.editor.Command.SUBSCRIPT,
+    goog.editor.Command.SUPERSCRIPT,
+    goog.editor.Command.STRIKE_THROUGH,
+    goog.editor.Command.REMOVE_FORMAT
+  ];
+  var myToolbar = goog.ui.editor.DefaultToolbar.makeToolbar(buttons,
+      goog.dom.getElement('toolbar'));
+
+  // Hook the toolbar into the field.
+  var myToolbarController =
+      new goog.ui.editor.ToolbarController(myField, myToolbar);
+  myField.makeEditable();
+  </script>
+
+  <script>
+  // change this to disable debugging.
+  var debugmode = false;
+  if (debugmode) {
+  var divConsole = new goog.debug.DivConsole(goog.dom.getElement('console'));
+  divConsole.setCapturing(true);
+  var logger = new goog.debug.Logger.getLogger('demos');
+  logger.setLevel(goog.debug.Logger.Level.ALL);
+  var outer = goog.dom.getElement('keys');
+  // Watch for field changes, to display below.
+  goog.events.listen(myField, goog.editor.Field.EventType.DELAYEDCHANGE,
+      updateFieldContents);
+
+  updateFieldContents();
+  } else {
+  logger = {};
+  logger.info = function() {};
+  //console = {};
+  //console.log = function(){};
+  }
+
+  /***********************************
+   * Language specific functions
+   */
+  // Editor settings
+  var field_styles = {};
+  field_styles["font-family"] = "Arial Unicode MS";
+  field_styles["font-size"] = "large";
+  var fieldwindow = myField.editableDomHelper.getWindow();
+  var fielddoc = fieldwindow.document;
+
+  function getContents() {
+	var body = myField.editableDomHelper.getWindow().document.body;
+	return body.innerHTML;
+  }
+
+  function saveContents() {
+	var name = prompt("Please enter file name to save as:");
+	memory.saveContents(getContents(), name);
+  }
+
+  var draftSpan = document.getElementById('draftspan');
+  function setStatus(status) {
+	if (!status) status = "";
+	draftSpan.innerHTML = status;
+  }
+
+  function setDraftTimer() {
+    return setTimeout(
+		function() {
+		  var saved_time = memory.saveDraft(getContents());
+		  if (saved_time != null) {
+		    setStatus("Draft saved at " + saved_time);
+		  }
+		}, 5000);
+  }
+
+  var draftTimer = setDraftTimer();
+
+  goog.style.setStyle(
+    fielddoc.body,
+    field_styles);
+  goog.events.listen(
+    fielddoc,
+    goog.events.EventType.KEYPRESS,
+    function(e) {
+      om.ProcessKeypressEvent(e, myField);
+      clearTimeout(draftTimer);
+	  draftTimer = setDraftTimer();
+    }
+  );
+  fielddoc.body.focus();
+
+  var kSanskritAsLang = "Current language is Tamil. Click to type in Sanskrit.";
+  var kTamilAsLang = "Current language is Sanskrit. Click to type in Tamil.";
+  function setLanguage() {
+    var d = goog.dom.$('lang');
+    var str = d.innerHTML;
+    if (str == kSanskritAsLang) {
+      sanskrit.setAsTypingLanguage();
+      d.innerHTML = kTamilAsLang;
+    } else {
+      tamil.setAsTypingLanguage();
+      d.innerHTML = kSanskritAsLang;
+    }
+    keyslayout.displayMappings('mappings', true);
+    fielddoc.body.focus();
+  }
+  goog.dom.$('lang').innerHTML = kTamilAsLang;
+  sanskrit.setAsTypingLanguage();
+
+
+  function tabChanged(event) {
+    if (event.page.getTitle() == editortitle) {
+      fielddoc.body.focus();
+    }
+  }
+  goog.events.listen(tabPane, goog.ui.TabPane.Events.CHANGE, tabChanged);
+
+  keyslayout.displayMappings('mappings', true);
+
+  var loadmenudiv = goog.dom.getElement('loadmenu');
+  var loadmenu = new goog.ui.Menu();
+  loadmenu.decorate(loadmenudiv);
+  loadmenu.setVisible(false);
+
+  var deletemenudiv = goog.dom.getElement('deletemenu');
+  var deletemenu = new goog.ui.Menu();
+  deletemenu.decorate(deletemenudiv);
+  deletemenu.setVisible(false);
+
+  function removeMenu(menudiv, menuobj) {
+	menuobj.setVisible(false);
+	menuobj.removeChildren();
+	while(menudiv.firstChild) {
+		menudiv.removeChild(menudiv.firstChild);
+	}
+  }
+  function removeMenus() {
+	removeMenu(loadmenudiv, loadmenu);
+	removeMenu(deletemenudiv, deletemenu);
+  }
+
+  goog.events.listen(loadmenu, 'action',
+		function(e) {
+			memory.saveDraft(getContents())
+			var body = myField.editableDomHelper.getWindow().document.body;
+    		var name = e.target.getCaption();
+			var content = memory.getSavedContent(name);
+			if (content == null) {
+				alert("No file by name '" + name + "' found.");
+			} else {
+				body.innerHTML = content;
+				setStatus("Loaded contents from " + name);
+			}
+			removeMenus();
+			body.focus();
+		});
+
+  goog.events.listen(deletemenu, 'action',
+		function(e) {
+			memory.saveDraft(getContents());
+    		var name = e.target.getCaption();
+			var content = memory.getSavedContent(name);
+			if (content === null) content = "";
+			var br = content.indexOf("<br");
+			if (br == -1) br = 20;
+			var str = "Contents: " + content.substr(0, br) + " ... ";
+			var del = confirm("Delete '" + name + "' permanently? \n" + str);
+			if (del) {
+				memory.deleteContent(name);
+			}
+			removeMenus();
+			setStatus("Deleted " + name);
+			var body = myField.editableDomHelper.getWindow().document.body;
+			body.focus();
+		});
+
+  function popupMenu(menu) {
+	if (menu.isVisible()) {
+		return removeMenus();
+	}
+	var filenames = memory.getSavedNames();
+	if (filenames.length == 0) {
+		setStatus("No saved files yet.");
+		return;
+	}
+	for (i in filenames) {
+      menu.addItem(new goog.ui.MenuItem(filenames[i]));
+	  menu.setVisible(true);
+    }
+  }
+
+  </script>
+  <br>
+  <button type="button" class="button" onclick="saveContents()">Save contents to a file</button>
+</body>
+</html>
