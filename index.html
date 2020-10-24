@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Jai Sri Ram</title>
+  <script src="closure.js"></script>
+  <script src="utils.js"></script>
+  <script src="unicode_mappings.js"></script>
+  <script src="converter.js"></script>
+</head>
+<style>
+  #editor {
+    width: 800px;
+    height: 600px;
+    background-color: white;
+    border: 1px solid grey;
+    font-size: larger;
+    margin: 10px;
+    padding: 10px;
+  }
+</style>
+
+<body>
+  <div id="editor"></div>
+  <script>
+    logger = {};
+    logger.info = function() {};
+    //console = {};
+    //console.log = function(){};
+    var editor = document.getElementById("editor");
+    function printchar(e) {
+      console.log("\ntyped: ", e)
+      om.ProcessKeypressEvent(e, editor);
+    }
+    editor.contentEditable = true;
+    editor.focus();
+    editor.addEventListener('keydown', printchar);
+    sanskrit.setAsTypingLanguage();
+  </script>
+</body>
+</html>
