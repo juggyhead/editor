@@ -6,8 +6,6 @@ om = {};  // language independent.
 om.translit = function(prev, ch, later) {
 
   console.log("current memory: ", memory);
-  // remember this input; cleared later if not needed
-  memory.setMemoryAndTimer(ch);
 
   if (ch == "\n") {  // ENTER
     memory.clearMemoryAndTimer();
@@ -15,6 +13,9 @@ om.translit = function(prev, ch, later) {
   }
 
   var MapClear = om.getMappingFromEnglish(ch);
+
+  // remember this input; cleared later if not needed
+  memory.setMemoryAndTimer(ch);
 
   if (!MapClear) {
     // no mapping for this char. display it as is.
@@ -92,32 +93,31 @@ om.insertMappedString = function(MapClear, prev) {
   var mappedstr = MapClear.str;
   var inputchar = MapClear.inputchar;
 
-  var newstringbeforecursor = mappedstr;
-  if (!prev) {
-    return newstringbeforecursor;
-  }
   var oldstringbeforecursor = prev;
-  if (oldstringbeforecursor.length > 0) {
-    // for cases like sV + h to make it shV (replace
-    // sV with shV.)
-    if (MapClear.backspace) {
-      oldstringbeforecursor = om.backspaceAndRemoveVirama(oldstringbeforecursor);
-    } else if (MapClear.backspaceonlyvirama) {
-      var oldlen = oldstringbeforecursor.length;
-      oldstringbeforecursor = om.backspaceOnlyVirama(oldstringbeforecursor);
-      var newlen = oldstringbeforecursor.length;
-      if (newlen == oldlen-1) {
-        // virama was removed.
-        // if the input was 'a', mission accomplished.
-        // nothing more to append.
-        // Note: we used mappedstr as inputchar is not available.
-        //if (mappedstr == language.a) {
-        if (inputchar == 'a') {
-          mappedstr = '';
+  var newstringbeforecursor = mappedstr;
+  if (!!prev) {
+    if (oldstringbeforecursor.length > 0) {
+      // for cases like sV + h to make it shV (replace
+      // sV with shV.)
+      if (MapClear.backspace) {
+        oldstringbeforecursor = om.backspaceAndRemoveVirama(oldstringbeforecursor);
+      } else if (MapClear.backspaceonlyvirama) {
+        var oldlen = oldstringbeforecursor.length;
+        oldstringbeforecursor = om.backspaceOnlyVirama(oldstringbeforecursor);
+        var newlen = oldstringbeforecursor.length;
+        if (newlen == oldlen-1) {
+          // virama was removed.
+          // if the input was 'a', mission accomplished.
+          // nothing more to append.
+          // Note: we used mappedstr as inputchar is not available.
+          //if (mappedstr == language.a) {
+          if (inputchar == 'a') {
+            mappedstr = '';
+          }
         }
       }
     }
-  }
+  }  // if !!prev
 
   // If at the start of a line or word, convert matras
   // to their corresponding vowel forms.
@@ -132,11 +132,12 @@ om.insertMappedString = function(MapClear, prev) {
   // 3) only for the input char 'a', this sequence is disrupted
   //  because of the above code to handle removal of virama.
   // 4) Hence only for letter 'a', we allow an exception.
+  console.log(oldstringbeforecursor);
   var isWordStart = !oldstringbeforecursor ||
     (oldstringbeforecursor.charAt(
       oldstringbeforecursor.length-1) == ' ') ||
     (oldstringbeforecursor.charAt(
-      oldstringbeforecursor.length-1).charCodeAt(0) == 160);
+      oldstringbeforecursor.length-1) == "\n");
   if (isWordStart) {
       // Convert matras to vowels.
       if (mappedstr in language.matra_to_vowel) {
@@ -152,6 +153,20 @@ om.insertMappedString = function(MapClear, prev) {
     // remove language.A and insert language.AA
     oldstringbeforecursor = om.backspaceAndRemoveVirama(oldstringbeforecursor);
     mappedstr = language.AA;
+  }
+  if (!!oldstringbeforecursor) {
+    var prevchar = oldstringbeforecursor.charAt(
+      oldstringbeforecursor.length-1);
+    var combo = prevchar + inputchar;  // अa or इi etc
+    var combo_replacement = '';
+    if (combo == language.A + 'a') { combo_replacement = language.AA; }
+    if (combo == language.I + 'i') { combo_replacement = language.II; }
+    if (combo == language.U + 'u') { combo_replacement = language.UU; }
+    if (combo == language.O + 'o') { combo_replacement = language.OU; }
+    if (!!combo_replacement) {
+      oldstringbeforecursor = om.backspaceAndRemoveVirama(oldstringbeforecursor);
+      mappedstr = combo_replacement;      
+    }
   }
 
   newstringbeforecursor = oldstringbeforecursor + mappedstr;
