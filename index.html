@@ -523,6 +523,8 @@ src="mic.gif"></button>
       return;
     }
     showInfo('');
+    var pv = getAtCursor();
+    putAtCursor(pv[0] + final_transcript, pv[1]);
   };
 
   recognition.onresult = function(event) {
@@ -541,8 +543,6 @@ src="mic.gif"></button>
       }
     }
     final_span.innerHTML = final_transcript;
-    var pv = getAtCursor();
-    putAtCursor(pv[0] + final_transcript, pv[1]);
   };
 
   function showInfo(s) {
