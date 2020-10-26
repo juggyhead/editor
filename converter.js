@@ -29,6 +29,13 @@ om.translit = function(prev, ch, later) {
   if (!strbeforecursor) {
     // no chars added. maybe a backspace. or some neutralizer.
     memory.clearMemoryAndTimer();
+  } else {
+    // see if the next char is a consonant. if so, make this typed
+    // char a full sound, without virama. this also prevents cursor
+    // from jumping to the end.
+    if (later.length > 0 && om.isConsonant(later[0])) {
+      strbeforecursor = om.removeViramaFromEnd(strbeforecursor);
+    }
   }
   return [strbeforecursor, later];
 }
@@ -103,7 +110,7 @@ om.insertMappedString = function(MapClear, prev) {
         oldstringbeforecursor = om.backspaceAndRemoveVirama(oldstringbeforecursor);
       } else if (MapClear.backspaceonlyvirama) {
         var oldlen = oldstringbeforecursor.length;
-        oldstringbeforecursor = om.backspaceOnlyVirama(oldstringbeforecursor);
+        oldstringbeforecursor = om.backspaceViramaAndMatra(oldstringbeforecursor);
         var newlen = oldstringbeforecursor.length;
         if (newlen == oldlen-1) {
           // virama was removed.
@@ -165,7 +172,7 @@ om.insertMappedString = function(MapClear, prev) {
     if (combo == language.O + 'o') { combo_replacement = language.OU; }
     if (!!combo_replacement) {
       oldstringbeforecursor = om.backspaceAndRemoveVirama(oldstringbeforecursor);
-      mappedstr = combo_replacement;      
+      mappedstr = combo_replacement;
     }
   }
 
@@ -201,19 +208,19 @@ om.backspaceAndRemoveVirama = function(str) {
   }
   return om.backspace(str);
 }
-om.backspaceOnlyVirama = function(str) {
+om.backspaceViramaAndMatra = function(str) {
   if (!str) return str;
   var len = str.length;
   if (len > 0) {
     is_virama = str[len - 1] == language.virama;
     is_matra = str[len - 1] in language.matra;
     if (is_virama || is_matra) {
-      //console.log("backspaceOnlyVirama: ", str[len - 1], is_virama, is_matra)
       str = str.substr(0, len - 1);
     }
   }
   return str;
 }
+
 om.backspace = function(str) {
   if (!str) return str;
   var len = str.length;
@@ -227,4 +234,9 @@ om.removeViramaFromEnd = function(str) {
     str = str.substr(0, len - 1);
   }
   return str;
+}
+
+om.isConsonant = function(ch) {
+  var nn = ch.charCodeAt(0);
+  return nn >= 2325 && nn <= 2361; 
 }
