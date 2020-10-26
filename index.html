@@ -14,28 +14,36 @@
     height: 600px;
     background-color: white;
     border: 1px solid grey;
-    font-size: larger;
+    font-size: xx-large;
+    font-family: sans-serif;
     margin: 10px;
     padding: 10px;
   }
 </style>
 
 <body>
-  <div id="editor"></div>
+  <textarea id="editor" oninput="printchar();"></textarea>
   <script>
-    logger = {};
-    logger.info = function() {};
     //console = {};
     //console.log = function(){};
-    var editor = document.getElementById("editor");
-    function printchar(e) {
-      console.log("\ntyped: ", e)
-      om.ProcessKeypressEvent(e, editor);
-    }
-    editor.contentEditable = true;
-    editor.focus();
-    editor.addEventListener('keydown', printchar);
     sanskrit.setAsTypingLanguage();
+    var editor = document.getElementById("editor");
+    function printchar() {
+      var str = editor.value;  // "abc|de"
+      var pos = editor.selectionStart;  // 3
+
+      var prev = str.substring(0, pos);  // "abc"
+      var later = str.substring(pos);  // "de"
+      var typed_char = '';
+      if (prev.length > 0) {
+        typed_char = prev[prev.length - 1];  // "c"
+        prev = prev.substring(0, pos-1);  // "ab"
+      }
+
+      console.log("\n", prev, typed_char, "|", later);
+      var ret = om.translit(prev, typed_char, later);
+      editor.value = ret[0]+ret[1];
+    }
   </script>
 </body>
 </html>
