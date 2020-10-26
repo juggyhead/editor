@@ -286,7 +286,7 @@
   </div>
   <button id="start_button" onclick="startButton(event)"><img alt="Start" id="start_img"
 src="mic.gif"></button>
-  <span class="final" id="final_span"></span>
+  <span class="final" id="final_span">Speak in Tamil</span>
   <br/>
   <div id="tabpane"></div>
   <textarea id="editor" oninput="printchar();"></textarea>
@@ -467,8 +467,9 @@ src="mic.gif"></button>
   var ignore_onend;
   var start_timestamp;
   var recognition = new webkitSpeechRecognition();
-  recognition.continuous = true;
-  recognition.interimResults = true;
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
 
   function startButton(event) {
     if (recognizing) {
