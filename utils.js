@@ -85,7 +85,7 @@ memory.getMemory = function() {
   return memory.lasttyped;
 }
 
-memory.setMemory = function(inputch, cursorstr) {
+memory.setMemory = function(inputch) {
   if (!inputch) {
     return;
   }
@@ -106,9 +106,9 @@ memory.clearMemory = function() {
   memory.lasttyped = '';
 }
 
-memory.setMemoryAndTimer = function(inputch, cursorstr) {
+memory.setMemoryAndTimer = function(inputch) {
   clearTimeout(memory.timer);
-  memory.setMemory(inputch, cursorstr);
+  memory.setMemory(inputch);
   memory.timer = setTimeout(memory.clearMemoryAndTimer, 2000);
   console.log("setting memory: ", memory);
 }
