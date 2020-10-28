@@ -52,7 +52,8 @@ om.getMappingFromEnglish = function(inputch) {
   var obj = {};
   obj.str = '';
   obj.backspace = false;
-  obj.backspaceonlyvirama = false;
+  obj.backspace_only_virama = false;
+  obj.backspace_virama_and_matra = false;
 
   if (!!memory.getMemory()) {
     var str = memory.getMemory() + inputch;
@@ -68,7 +69,7 @@ om.getMappingFromEnglish = function(inputch) {
       if (matra_is_to_be_inserted) {
         // to fix the bug while typing "jai", where "a" was stored in memory,
         // and "ai" got rid of "j".
-        obj.backspaceonlyvirama = true;
+        obj.backspace_virama_and_matra = true;
       } else {
         obj.backspace = true;
       }
@@ -89,7 +90,7 @@ om.getMappingFromEnglish = function(inputch) {
     // if the input char is a vowel and prev sanskrit char
     // was a virama, then remove the latter.
     if (mapping in language.matra) {
-      obj.backspaceonlyvirama = true;
+      obj.backspace_only_virama = true;
     }
     return obj;
   }
@@ -97,34 +98,36 @@ om.getMappingFromEnglish = function(inputch) {
 }
 
 om.insertMappedString = function(MapClear, prev) {
+  console.log("insertMappedString", MapClear);
   var mappedstr = MapClear.str;
   var inputchar = MapClear.inputchar;
 
   var oldstringbeforecursor = prev;
   var newstringbeforecursor = mappedstr;
-  if (!!prev) {
-    if (oldstringbeforecursor.length > 0) {
-      // for cases like sV + h to make it shV (replace
-      // sV with shV.)
-      if (MapClear.backspace) {
-        oldstringbeforecursor = om.backspaceAndRemoveVirama(oldstringbeforecursor);
-      } else if (MapClear.backspaceonlyvirama) {
-        var oldlen = oldstringbeforecursor.length;
-        oldstringbeforecursor = om.backspaceViramaAndMatra(oldstringbeforecursor);
-        var newlen = oldstringbeforecursor.length;
-        if (newlen == oldlen-1) {
-          // virama was removed.
-          // if the input was 'a', mission accomplished.
-          // nothing more to append.
-          // Note: we used mappedstr as inputchar is not available.
-          //if (mappedstr == language.a) {
-          if (inputchar == 'a') {
-            mappedstr = '';
-          }
+  if (oldstringbeforecursor.length > 0) {
+    // for cases like sV + h to make it shV (replace
+    // sV with shV.)
+    if (MapClear.backspace) {
+      oldstringbeforecursor = om.backspaceAndRemoveVirama(oldstringbeforecursor);
+    }
+    else if (MapClear.backspace_only_virama || MapClear.backspace_virama_and_matra) {
+      var oldlen = oldstringbeforecursor.length;
+      oldstringbeforecursor = om.backspaceViramaAndMatra(
+        oldstringbeforecursor,
+        /* keep_matra = */ MapClear.backspace_only_virama);
+      var newlen = oldstringbeforecursor.length;
+      if (newlen == oldlen-1) {
+        // virama was removed.
+        // if the input was 'a', mission accomplished.
+        // nothing more to append.
+        // Note: we used mappedstr as inputchar is not available.
+        //if (mappedstr == language.a) {
+        if (inputchar == 'a') {
+          mappedstr = '';
         }
       }
     }
-  }  // if !!prev
+  }
 
   // If at the start of a line or word, convert matras
   // to their corresponding vowel forms.
@@ -139,7 +142,7 @@ om.insertMappedString = function(MapClear, prev) {
   // 3) only for the input char 'a', this sequence is disrupted
   //  because of the above code to handle removal of virama.
   // 4) Hence only for letter 'a', we allow an exception.
-  console.log(oldstringbeforecursor);
+  //console.log(oldstringbeforecursor);
   var isWordStart = !oldstringbeforecursor ||
     (oldstringbeforecursor.charAt(
       oldstringbeforecursor.length-1) == ' ') ||
@@ -153,14 +156,14 @@ om.insertMappedString = function(MapClear, prev) {
   }
   // Exception handling for case when we have language.A before
   // cursor and the input is 'a'.
-  if (!!oldstringbeforecursor &&
+/*  if (!!oldstringbeforecursor &&
       (oldstringbeforecursor.charAt(
         oldstringbeforecursor.length-1) == language.A) &&
       (inputchar == 'a')) {
     // remove language.A and insert language.AA
     oldstringbeforecursor = om.backspaceAndRemoveVirama(oldstringbeforecursor);
     mappedstr = language.AA;
-  }
+  }*/
   if (!!oldstringbeforecursor) {
     var prevchar = oldstringbeforecursor.charAt(
       oldstringbeforecursor.length-1);
@@ -208,12 +211,13 @@ om.backspaceAndRemoveVirama = function(str) {
   }
   return om.backspace(str);
 }
-om.backspaceViramaAndMatra = function(str) {
+om.backspaceViramaAndMatra = function(str, keep_matra) {
   if (!str) return str;
   var len = str.length;
   if (len > 0) {
     is_virama = str[len - 1] == language.virama;
     is_matra = str[len - 1] in language.matra;
+    if (keep_matra) { is_matra = false; }
     if (is_virama || is_matra) {
       str = str.substr(0, len - 1);
     }
@@ -238,5 +242,5 @@ om.removeViramaFromEnd = function(str) {
 
 om.isConsonant = function(ch) {
   var nn = ch.charCodeAt(0);
-  return nn >= 2325 && nn <= 2361; 
+  return nn >= 2325 && nn <= 2361;
 }
