@@ -293,8 +293,8 @@ src="mic.gif"></button>
   <div id='mappings'></div>
   <a href="#" id="lang" class="languagechange" onclick="setLanguage()"></a>
   <script>
-    console = {};
-    console.log = function(){};
+    //console = {};
+    //console.log = function(){};
     sanskrit.setAsTypingLanguage();
     var editor = document.getElementById("editor");
 
@@ -318,7 +318,7 @@ src="mic.gif"></button>
       var typed_char = '';
       if (prev.length > 0) {
         typed_char = prev[prev.length - 1];  // "c"
-        prev = prev.substring(0, pos-1);  // "ab"
+        prev = prev.substring(0, prev.length - 1);  // "ab"
       }
       console.log("\n", prev, typed_char, "|", later);
       var ret = om.translit(prev, typed_char, later);
