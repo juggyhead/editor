@@ -287,6 +287,7 @@
   <button id="start_button" onclick="startButton(event)"><img alt="Start" id="start_img"
 src="mic.gif"></button>
   <span class="final" id="final_span">Speak in Tamil</span>
+  <button id="tts" onclick="textToSpeech()" style="height: 50px;width: 50px;"><span style="font-size:large">📢</span></button>
   <br/>
   <div id="tabpane"></div>
   <textarea id="editor" oninput="printchar();"></textarea>
@@ -295,6 +296,7 @@ src="mic.gif"></button>
   <script>
     console = {};
     console.log = function(){};
+
     sanskrit.setAsTypingLanguage();
     var editor = document.getElementById("editor");
 
@@ -469,7 +471,19 @@ src="mic.gif"></button>
   var recognition = new webkitSpeechRecognition();
   recognition.continuous = false;
   recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
+  recognition.maxAlternatives = 10;
+
+/*
+Sequence of events:
+onstart
+onaudiostart
+onsoundstart
+onresult
+onspeechend
+onsoundend
+onaudioend
+onend
+*/
 
   function startButton(event) {
     if (recognizing) {
@@ -484,6 +498,20 @@ src="mic.gif"></button>
     start_img.src = 'mic-slash.gif';
     showInfo('info_allow');
     start_timestamp = event.timeStamp;
+  }
+
+  function textToSpeech() {
+    var str = editor.value;
+    var o = new SpeechSynthesisUtterance(str);
+    var synth = window.speechSynthesis;
+    synth.resume();
+    synth.cancel();
+    var voices = synth.getVoices();
+    o.rate=0.7;
+    o.voice = voices[54];
+    o.onerror = function(e) { console.log("done", e); };
+    console.log("speaking: ", o);
+    synth.speak(o);
   }
 
   recognition.onstart = function() {
@@ -514,6 +542,7 @@ src="mic.gif"></button>
   };
 
   recognition.onend = function() {
+    console.log(event);
     recognizing = false;
     if (ignore_onend) {
       return;
@@ -529,6 +558,7 @@ src="mic.gif"></button>
   };
 
   recognition.onresult = function(event) {
+    console.log(event);
     var interim_transcript = '';
     if (typeof(event.results) == 'undefined') {
       recognition.onend = null;
@@ -545,6 +575,7 @@ src="mic.gif"></button>
     }
     final_span.innerHTML = final_transcript;
   };
+
 
   function showInfo(s) {
     console.log(s);
