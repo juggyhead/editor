@@ -288,14 +288,22 @@
 src="mic.gif"></button>
   <span class="final" id="final_span">Speak in Tamil</span>
   <button id="tts" onclick="textToSpeech()" style="height: 50px;width: 50px;"><span style="font-size:large">📢</span></button>
+
   <br/>
   <div id="tabpane"></div>
   <textarea id="editor" oninput="printchar();"></textarea>
   <div id='mappings'></div>
   <a href="#" id="lang" class="languagechange" onclick="setLanguage()"></a>
   <script>
-    console = {};
-    console.log = function(){};
+    //console = {};
+    console.log = function(s1, s2, s3, s4) {
+      c = document.getElementById("console");
+      str = s1;
+      if (!!s2) { str += " " + s2; if (s2['text']) str += " -> " + s2.text; }
+      if (!!s3) { str += " " + s3; if (s3['text']) str += " -> " + s3.text;  }
+      if (!!s4) { str += " " + s4; if (s4['text']) str += " -> " + s4.text;  }
+      c.innerHTML = c.innerHTML + "<br>" + str;
+    };
 
     sanskrit.setAsTypingLanguage();
     var editor = document.getElementById("editor");
@@ -585,5 +593,6 @@ onend
   </script>
   <br>
   <button type="button" class="button" onclick="saveContents()">Save contents to a file</button>
+  <div id="console"></div>
 </body>
 </html>
