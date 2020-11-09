@@ -110,11 +110,9 @@ memory.setMemoryAndTimer = function(inputch) {
   clearTimeout(memory.timer);
   memory.setMemory(inputch);
   memory.timer = setTimeout(memory.clearMemoryAndTimer, 2000);
-  console.log("setting memory: ", memory);
 }
 
 memory.clearMemoryAndTimer = function() {
-  console.log("clearing memory: ", memory);
   clearTimeout(memory.timer);
   memory.clearMemory();
 }
