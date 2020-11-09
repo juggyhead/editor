@@ -5,8 +5,6 @@ languagemappings = {};
 om = {};  // language independent.
 om.translit = function(prev, ch, later) {
 
-  console.log("current memory: ", memory);
-
   if (ch == "\n") {  // ENTER
     memory.clearMemoryAndTimer();
     return [prev + ch, later];
@@ -98,7 +96,6 @@ om.getMappingFromEnglish = function(inputch) {
 }
 
 om.insertMappedString = function(MapClear, prev) {
-  console.log("insertMappedString", MapClear);
   var mappedstr = MapClear.str;
   var inputchar = MapClear.inputchar;
 
