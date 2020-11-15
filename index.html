@@ -295,8 +295,9 @@ src="mic.gif"></button>
   <div id='mappings'></div>
   <a href="#" id="lang" class="languagechange" onclick="setLanguage()"></a>
   <script>
-    //console = {};
+    console = {};
     console.log = function(s1, s2, s3, s4) {
+      return;
       c = document.getElementById("console");
       str = s1;
       if (!!s2) { str += " " + s2; if (s2['text']) str += " -> " + s2.text; }
@@ -477,9 +478,9 @@ src="mic.gif"></button>
   var ignore_onend;
   var start_timestamp;
   var recognition = new webkitSpeechRecognition();
-  recognition.continuous = false;
+  recognition.continuous = true;
   recognition.interimResults = false;
-  recognition.maxAlternatives = 10;
+  recognition.maxAlternatives = 2;
 
 /*
 Sequence of events:
@@ -561,8 +562,6 @@ onend
       return;
     }
     showInfo('');
-    var pv = getAtCursor();
-    putAtCursor(pv[0] + final_transcript, pv[1]);
   };
 
   recognition.onresult = function(event) {
@@ -571,7 +570,6 @@ onend
     if (typeof(event.results) == 'undefined') {
       recognition.onend = null;
       recognition.stop();
-      upgrade();
       return;
     }
     for (var i = event.resultIndex; i < event.results.length; ++i) {
@@ -582,6 +580,10 @@ onend
       }
     }
     final_span.innerHTML = final_transcript;
+    final_transcript = "\n" + final_transcript + "\n";
+    var pv = getAtCursor();
+    putAtCursor(pv[0] + final_transcript, pv[1]);
+    final_transcript = "";
   };
 
 
